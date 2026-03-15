@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>এম এ হালিম রাহি - ব্যাংকিং সিস্টেম</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; color: #333; margin: 0; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
+        h1, h2, h3 { color: #1a73e8; text-align: center; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
+        button { background: #1a73e8; color: white; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; }
+        button:hover { background: #1557b0; }
+        .balance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 20px 0; }
+        .stat-box { background: #fff; padding: 15px; border-radius: 12px; text-align: center; border-bottom: 4px solid #1a73e8; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .stat-box h2 { margin: 10px 0; color: #2ecc71; font-size: 24px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { border: 1px solid #eee; padding: 12px; text-align: left; font-size: 14px; }
+        th { background-color: #f8f9fa; color: #555; }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        #login-container { max-width: 400px; margin-top: 100px; }
+        .user-info-text { text-align: center; border-bottom: 1px solid #eee; padding-bottom: 15px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+    <div id="login-container" class="card">
+        <h2>ব্যাংকিং লগইন</h2>
+        <p style="text-align: center; color: #666;">স্বাগতম, এম এ হালিম রাহি</p>
+        <input type="password" id="loginPass" placeholder="গোপন পিন দিন">
+        <button onclick="checkLogin()">প্রবেশ করুন</button>
+    </div>
+
+    <div id="dashboard" style="display: none;">
+        <div class="card">
+            <h1>আমার দৈনিক হিসাব</h1>
+            <div class="user-info-text">
+                <p><strong>নাম:</strong> এম এ হালিম রাহি</p>
+                <p><strong>ফোন:</strong> ০১৭৯৯০৭২৯৮৭</p>
+                <p><strong>ঠিকানা:</strong> গোটারগ্রাম, বালাউট-৩১৯০, জকিগঞ্জ, সিলেট</p>
+                <p id="liveClock" style="color: #888; font-size: 13px;"></p>
+            </div>
+
+            <div class="balance-grid">
+                <div class="stat-box">বর্তমান ব্যালেন্স <h2>৳ <span id="totalBalanceDisplay">০</span></h2></div>
+                <div class="stat-box">শেষ জমা (In) <p id="lastInDisplay" style="color:green; font-weight:bold;">৳ ০</p></div>
+                <div class="stat-box">শেষ খরচ (Out) <p id="lastOutDisplay" style="color:red; font-weight:bold;">৳ ০</p></div>
+                <div class="stat-box">মাসের সর্বোচ্চ জমা <p id="maxMonthlyIn" style="color:#1a73e8; font-weight:bold;">৳ ০</p></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>নতুন লেনদেন এন্ট্রি</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <input type="number" id="amount" placeholder="টাকার পরিমাণ">
+                <select id="type">
+                    <option value="in">ক্যাশ ইন (জমা)</option>
+                    <option value="out">ক্যাশ আউট (খরচ)</option>
+                </select>
+            </div>
+            <input type="text" id="desc" placeholder="লেনদেনের বিবরণ লিখুন...">
+            <button onclick="addTransaction()">সেভ করুন</button>
+        </div>
+
+        <div class="card">
+            <h3>ট্রানজেকশন স্টেটমেন্ট</h3>
+            <div class="btn-group">
+                <button onclick="downloadPDF()" style="background:#28a745;">পিডিএফ ডাউনলোড</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table id="statementTable">
+                    <thead>
+                        <tr>
+                            <th>তারিখ ও সময়</th>
+                            <th>বিবরণ</th>
+                            <th>ধরন</th>
+                            <th>পরিমাণ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionList"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYaSJeaPOD5gtNyei4P84xDdpJAB_g8ck",
+            authDomain: "mybankingsystem-fec5a.firebaseapp.com",
+            projectId: "mybankingsystem-fec5a",
+            storageBucket: "mybankingsystem-fec5a.firebasestorage.app",
+            messagingSenderId: "960676273528",
+            appId: "1:960676273528:web:4f86e45c420d1f39b93c8d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // লগইন চেক (আপনার দেওয়া পিন)
+        window.checkLogin = function() {
+            const pin = document.getElementById('loginPass').value;
+            if(pin === "540663") { 
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                startClock();
+                loadData();
+            } else {
+                alert("ভুল পিন! সঠিক পিন দিন।");
+            }
+        };
+
+        function startClock() {
+            setInterval(() => {
+                document.getElementById('liveClock').innerText = "তারিখ ও সময়: " + new Date().toLocaleString('bn-BD');
+            }, 1000);
+        }
+
+        window.addTransaction = async function() {
+            const amt = document.getElementById('amount').value;
+            const desc = document.getElementById('desc').value;
+            const type = document.getElementById('type').value;
+
+            if(!amt || !desc) return alert("পরিমাণ এবং বিবরণ দিন");
+
+            try {
+                await addDoc(collection(db, "transactions"), {
+                    amount: parseFloat(amt),
+                    description: desc,
+                    type: type,
+                    timestamp: new Date()
+                });
+                alert("লেনদেন সফল!");
+                document.getElementById('amount').value = '';
+                document.getElementById('desc').value = '';
+                loadData();
+            } catch (e) { console.error(e); }
+        };
+
+        async function loadData() {
+            const q = query(collection(db, "transactions"), orderBy("timestamp", "desc"));
+            const querySnapshot = await getDocs(q);
+            
+            let total = 0, lastIn = 0, lastOut = 0, maxIn = 0;
+            let tableHTML = "";
+            const currentMonth = new Date().getMonth();
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const tDate = data.timestamp.toDate();
+                const formattedDate = tDate.toLocaleString('bn-BD');
+
+                if(data.type === 'in') {
+                    total += data.amount;
+                    if(lastIn === 0) lastIn = data.amount;
+                    if(tDate.getMonth() === currentMonth && data.amount > maxIn) maxIn = data.amount;
+                } else {
+                    total -= data.amount;
+                    if(lastOut === 0) lastOut = data.amount;
+                }
+
+                tableHTML += `<tr>
+                    <td>${formattedDate}</td>
+                    <td>${data.description}</td>
+                    <td style="color:${data.type === 'in' ? 'green' : 'red'}">${data.type === 'in' ? 'জমা' : 'খরচ'}</td>
+                    <td>৳ ${data.amount}</td>
+                </tr>`;
+            });
+
+            document.getElementById('transactionList').innerHTML = tableHTML;
+            document.getElementById('totalBalanceDisplay').innerText = total;
+            document.getElementById('lastInDisplay').innerText = "৳ " + lastIn;
+            document.getElementById('lastOutDisplay').innerText = "৳ " + lastOut;
+            document.getElementById('maxMonthlyIn').innerText = "৳ " + maxIn;
+        }
+
+        window.downloadPDF = function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Account Statement: M A Halim Rahi", 14, 15);
+            doc.autoTable({ html: '#statementTable', startY: 25 });
+            doc.save("Rahi_Banking_Statement.pdf");
+        };
+    </script>
+</body>
+</html>
