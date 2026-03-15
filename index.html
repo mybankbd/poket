@@ -3,190 +3,1517 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>এম এ হালিম রাহি - ব্যাংকিং সিস্টেম</title>
-    
+    <title>Rahi Bank — Personal Finance</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; color: #333; margin: 0; }
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
-        h1, h2, h3 { color: #1a73e8; text-align: center; }
-        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
-        button { background: #1a73e8; color: white; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; }
-        button:hover { background: #1557b0; }
-        .balance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 20px 0; }
-        .stat-box { background: #fff; padding: 15px; border-radius: 12px; text-align: center; border-bottom: 4px solid #1a73e8; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .stat-box h2 { margin: 10px 0; color: #2ecc71; font-size: 24px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
-        th, td { border: 1px solid #eee; padding: 12px; text-align: left; font-size: 14px; }
-        th { background-color: #f8f9fa; color: #555; }
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        #login-container { max-width: 400px; margin-top: 100px; }
-        .user-info-text { text-align: center; border-bottom: 1px solid #eee; padding-bottom: 15px; line-height: 1.6; }
+        :root {
+            --bg: #0a0e1a;
+            --surface: rgba(255,255,255,0.04);
+            --surface-hover: rgba(255,255,255,0.07);
+            --border: rgba(255,255,255,0.09);
+            --gold: #c8a96e;
+            --gold-light: #e8c98e;
+            --green: #00e5a0;
+            --red: #ff6b8a;
+            --blue: #4fc3f7;
+            --text: #f0ece4;
+            --muted: rgba(240,236,228,0.45);
+            --card-radius: 20px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ─── Animated BG ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(200,169,110,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 80%, rgba(79,195,247,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 50% 50%, rgba(0,229,160,0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ─── Grid lines bg ─── */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(200,169,110,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(200,169,110,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page-wrap { position: relative; z-index: 1; }
+
+        /* ─── LOGIN ─── */
+        #login-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 52px 44px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+            animation: fadeUp 0.8s ease forwards;
+        }
+
+        .login-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: var(--gold);
+            letter-spacing: -1px;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .login-tagline {
+            font-size: 0.78rem;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 44px;
+        }
+
+        .login-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), #8b6914);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin: 0 auto 16px;
+            box-shadow: 0 0 0 3px rgba(200,169,110,0.2);
+        }
+
+        .login-name {
+            font-size: 1.05rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .login-sub {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 36px;
+        }
+
+        .pin-dots {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 28px;
+            min-height: 18px;
+        }
+
+        .pin-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid rgba(200,169,110,0.4);
+            transition: all 0.2s;
+        }
+
+        .pin-dot.filled {
+            background: var(--gold);
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(200,169,110,0.5);
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .num-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 500;
+            padding: 18px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .num-btn:hover { background: rgba(200,169,110,0.12); border-color: rgba(200,169,110,0.3); }
+        .num-btn:active { transform: scale(0.94); }
+
+        .num-btn.del { font-size: 1rem; color: var(--muted); }
+        .num-btn.enter {
+            background: linear-gradient(135deg, var(--gold), #8b6914);
+            border-color: transparent;
+            color: #0a0e1a;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .num-btn.enter:hover { box-shadow: 0 0 20px rgba(200,169,110,0.4); }
+
+        .login-error {
+            color: var(--red);
+            font-size: 0.82rem;
+            height: 20px;
+            transition: opacity 0.3s;
+        }
+
+        /* ─── DASHBOARD ─── */
+        #dashboard { display: none; }
+
+        /* TOP BAR */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10,14,26,0.8);
+        }
+
+        .topbar-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: var(--gold);
+            letter-spacing: -0.5px;
+        }
+
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), #8b6914);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .topbar-info { text-align: right; }
+        .topbar-name { font-size: 0.88rem; font-weight: 600; }
+        .topbar-time { font-size: 0.72rem; color: var(--muted); }
+
+        /* MAIN LAYOUT */
+        .dash-body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* HERO BALANCE CARD */
+        .hero-card {
+            background: linear-gradient(135deg, rgba(200,169,110,0.15), rgba(200,169,110,0.05));
+            border: 1px solid rgba(200,169,110,0.25);
+            border-radius: 28px;
+            padding: 40px 48px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(200,169,110,0.08);
+        }
+
+        .hero-card::after {
+            content: '';
+            position: absolute;
+            bottom: -60px;
+            right: 80px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(200,169,110,0.05);
+        }
+
+        .hero-label {
+            font-size: 0.78rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 12px;
+        }
+
+        .hero-balance {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.8rem, 6vw, 4.5rem);
+            font-weight: 900;
+            color: var(--text);
+            line-height: 1;
+            margin-bottom: 20px;
+        }
+
+        .hero-balance span { color: var(--gold); }
+
+        .hero-meta {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .hero-meta-item { }
+        .hero-meta-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+        .hero-meta-val { font-size: 0.95rem; font-weight: 500; margin-top: 3px; }
+
+        /* STATS ROW */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 22px 24px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.7s ease forwards;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            background: var(--surface-hover);
+            border-color: rgba(255,255,255,0.14);
+        }
+
+        .stat-card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+        }
+
+        .stat-card-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+
+        .stat-card-value { font-size: 1.5rem; font-weight: 600; }
+
+        .stat-card-sub { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 5px;
+            margin-bottom: 20px;
+            width: fit-content;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 9px 22px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            background: rgba(200,169,110,0.2);
+            color: var(--gold-light);
+        }
+
+        /* PANELS */
+        .panel { display: none; }
+        .panel.active { display: block; animation: fadeUp 0.4s ease; }
+
+        /* ENTRY FORM */
+        .entry-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .entry-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 22px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+        .form-group { display: flex; flex-direction: column; gap: 7px; }
+
+        .form-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+        .form-input {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            padding: 13px 16px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        .form-input:focus {
+            border-color: rgba(200,169,110,0.5);
+            box-shadow: 0 0 0 3px rgba(200,169,110,0.1);
+        }
+
+        .type-toggle {
+            display: flex;
+            gap: 10px;
+        }
+
+        .type-btn {
+            flex: 1;
+            padding: 13px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.03);
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .type-btn.active-in {
+            background: rgba(0,229,160,0.12);
+            border-color: rgba(0,229,160,0.4);
+            color: var(--green);
+        }
+
+        .type-btn.active-out {
+            background: rgba(255,107,138,0.12);
+            border-color: rgba(255,107,138,0.4);
+            color: var(--red);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(135deg, var(--gold) 0%, #8b6914 100%);
+            color: #0a0e1a;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s;
+            margin-top: 8px;
+            letter-spacing: 0.03em;
+        }
+
+        .submit-btn:hover { box-shadow: 0 8px 30px rgba(200,169,110,0.35); transform: translateY(-1px); }
+        .submit-btn:active { transform: translateY(0); }
+
+        /* STATEMENT TABLE */
+        .table-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 28px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .table-header h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .action-btns { display: flex; gap: 10px; }
+
+        .action-btn {
+            padding: 9px 18px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface-hover);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover { border-color: rgba(200,169,110,0.4); color: var(--gold-light); }
+
+        .search-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 180px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            padding: 10px 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus { border-color: rgba(200,169,110,0.4); }
+
+        .filter-select {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            padding: 10px 14px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .filter-select option { background: #1a1f2e; }
+
+        .txn-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        .txn-table th {
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .txn-table td {
+            padding: 14px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            vertical-align: middle;
+        }
+
+        .txn-table tr:last-child td { border-bottom: none; }
+
+        .txn-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+        .txn-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 11px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-in { background: rgba(0,229,160,0.12); color: var(--green); }
+        .badge-out { background: rgba(255,107,138,0.12); color: var(--red); }
+
+        .txn-amount-in { color: var(--green); font-weight: 600; }
+        .txn-amount-out { color: var(--red); font-weight: 600; }
+
+        .txn-desc { color: var(--text); }
+        .txn-date { color: var(--muted); font-size: 0.8rem; }
+
+        .no-txn {
+            text-align: center;
+            padding: 60px;
+            color: var(--muted);
+        }
+
+        .no-txn-icon { font-size: 3rem; margin-bottom: 12px; }
+
+        /* CHART PANEL */
+        .chart-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 20px;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            height: 140px;
+            padding-bottom: 8px;
+        }
+
+        .bar-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .bar-fill {
+            width: 100%;
+            border-radius: 6px 6px 0 0;
+            transition: height 0.8s cubic-bezier(.4,0,.2,1);
+            min-height: 4px;
+        }
+
+        .bar-label { font-size: 0.68rem; color: var(--muted); }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(10,14,26,0.95);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.88rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            z-index: 999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(.4,0,.2,1);
+            backdrop-filter: blur(20px);
+        }
+
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast-icon { font-size: 1.2rem; }
+        .toast.success { border-color: rgba(0,229,160,0.3); }
+        .toast.error { border-color: rgba(255,107,138,0.3); }
+
+        /* LOADING */
+        .loading-ring {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(200,169,110,0.3); }
+            50% { box-shadow: 0 0 0 8px rgba(200,169,110,0); }
+        }
+
+        /* PROFILE PANEL */
+        .profile-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 32px;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), #8b6914);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            margin: 0 auto 18px;
+            box-shadow: 0 0 0 4px rgba(200,169,110,0.15), 0 0 0 8px rgba(200,169,110,0.07);
+            animation: pulse 2.5s infinite;
+        }
+
+        .profile-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .profile-detail {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .profile-detail-item { text-align: center; }
+        .profile-detail-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+        .profile-detail-val { font-size: 0.92rem; font-weight: 500; margin-top: 4px; }
+
+        .logout-btn {
+            margin-top: 28px;
+            padding: 11px 28px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,107,138,0.3);
+            background: rgba(255,107,138,0.08);
+            color: var(--red);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover { background: rgba(255,107,138,0.15); }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(200,169,110,0.2); border-radius: 3px; }
+
+        .table-scroll { overflow-x: auto; }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .topbar { padding: 16px 20px; }
+            .dash-body { padding: 20px 16px; }
+            .hero-card { padding: 28px 24px; }
+            .login-card { padding: 40px 28px; }
+        }
     </style>
 </head>
 <body>
+<div class="page-wrap">
 
-    <div id="login-container" class="card">
-        <h2>ব্যাংকিং লগইন</h2>
-        <p style="text-align: center; color: #666;">স্বাগতম, এম এ হালিম রাহি</p>
-        <input type="password" id="loginPass" placeholder="গোপন পিন দিন">
-        <button onclick="checkLogin()">প্রবেশ করুন</button>
+<!-- ─── LOGIN ─── -->
+<div id="login-screen">
+    <div class="login-card">
+        <div class="login-logo">Rahi</div>
+        <div class="login-tagline">Personal Banking Dashboard</div>
+        <div class="login-avatar">👤</div>
+        <div class="login-name">এম এ হালিম রাহি</div>
+        <div class="login-sub">গোটারগ্রাম, জকিগঞ্জ, সিলেট</div>
+
+        <div class="pin-dots" id="pinDots">
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+        </div>
+
+        <div class="numpad">
+            <button class="num-btn" onclick="addPin('1')">1</button>
+            <button class="num-btn" onclick="addPin('2')">2</button>
+            <button class="num-btn" onclick="addPin('3')">3</button>
+            <button class="num-btn" onclick="addPin('4')">4</button>
+            <button class="num-btn" onclick="addPin('5')">5</button>
+            <button class="num-btn" onclick="addPin('6')">6</button>
+            <button class="num-btn" onclick="addPin('7')">7</button>
+            <button class="num-btn" onclick="addPin('8')">8</button>
+            <button class="num-btn" onclick="addPin('9')">9</button>
+            <button class="num-btn del" onclick="delPin()">⌫</button>
+            <button class="num-btn" onclick="addPin('0')">0</button>
+            <button class="num-btn enter" onclick="checkLogin()">প্রবেশ</button>
+        </div>
+
+        <div class="login-error" id="loginError"></div>
     </div>
+</div>
 
-    <div id="dashboard" style="display: none;">
-        <div class="card">
-            <h1>আমার দৈনিক হিসাব</h1>
-            <div class="user-info-text">
-                <p><strong>নাম:</strong> এম এ হালিম রাহি</p>
-                <p><strong>ফোন:</strong> ০১৭৯৯০৭২৯৮৭</p>
-                <p><strong>ঠিকানা:</strong> গোটারগ্রাম, বালাউট-৩১৯০, জকিগঞ্জ, সিলেট</p>
-                <p id="liveClock" style="color: #888; font-size: 13px;"></p>
+<!-- ─── DASHBOARD ─── -->
+<div id="dashboard">
+    <nav class="topbar">
+        <div class="topbar-logo">Rahi Bank</div>
+        <div class="topbar-user">
+            <div class="topbar-info">
+                <div class="topbar-name">M A Halim Rahi</div>
+                <div class="topbar-time" id="topClock">—</div>
             </div>
+            <div class="topbar-avatar">👤</div>
+        </div>
+    </nav>
 
-            <div class="balance-grid">
-                <div class="stat-box">বর্তমান ব্যালেন্স <h2>৳ <span id="totalBalanceDisplay">০</span></h2></div>
-                <div class="stat-box">শেষ জমা (In) <p id="lastInDisplay" style="color:green; font-weight:bold;">৳ ০</p></div>
-                <div class="stat-box">শেষ খরচ (Out) <p id="lastOutDisplay" style="color:red; font-weight:bold;">৳ ০</p></div>
-                <div class="stat-box">মাসের সর্বোচ্চ জমা <p id="maxMonthlyIn" style="color:#1a73e8; font-weight:bold;">৳ ০</p></div>
+    <div class="dash-body">
+
+        <!-- HERO BALANCE -->
+        <div class="hero-card">
+            <div class="hero-label">মোট ব্যালেন্স</div>
+            <div class="hero-balance"><span>৳</span> <span id="heroBalance">০</span></div>
+            <div class="hero-meta">
+                <div class="hero-meta-item">
+                    <div class="hero-meta-label">মোট জমা</div>
+                    <div class="hero-meta-val" id="heroTotalIn" style="color:var(--green)">৳ ০</div>
+                </div>
+                <div class="hero-meta-item">
+                    <div class="hero-meta-label">মোট খরচ</div>
+                    <div class="hero-meta-val" id="heroTotalOut" style="color:var(--red)">৳ ০</div>
+                </div>
+                <div class="hero-meta-item">
+                    <div class="hero-meta-label">মোট লেনদেন</div>
+                    <div class="hero-meta-val" id="heroCount" style="color:var(--blue)">০ টি</div>
+                </div>
+                <div class="hero-meta-item">
+                    <div class="hero-meta-label">এই মাসে</div>
+                    <div class="hero-meta-val" id="heroMonthNet" style="color:var(--gold)">৳ ০</div>
+                </div>
             </div>
         </div>
 
-        <div class="card">
-            <h3>নতুন লেনদেন এন্ট্রি</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input type="number" id="amount" placeholder="টাকার পরিমাণ">
-                <select id="type">
-                    <option value="in">ক্যাশ ইন (জমা)</option>
-                    <option value="out">ক্যাশ আউট (খরচ)</option>
-                </select>
+        <!-- STAT CARDS -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-card-icon" style="background:rgba(0,229,160,0.1)">📥</div>
+                <div class="stat-card-label">শেষ জমা</div>
+                <div class="stat-card-value" id="lastInVal" style="color:var(--green)">৳ ০</div>
+                <div class="stat-card-sub" id="lastInDate">—</div>
             </div>
-            <input type="text" id="desc" placeholder="লেনদেনের বিবরণ লিখুন...">
-            <button onclick="addTransaction()">সেভ করুন</button>
-        </div>
-
-        <div class="card">
-            <h3>ট্রানজেকশন স্টেটমেন্ট</h3>
-            <div class="btn-group">
-                <button onclick="downloadPDF()" style="background:#28a745;">পিডিএফ ডাউনলোড</button>
+            <div class="stat-card">
+                <div class="stat-card-icon" style="background:rgba(255,107,138,0.1)">📤</div>
+                <div class="stat-card-label">শেষ খরচ</div>
+                <div class="stat-card-value" id="lastOutVal" style="color:var(--red)">৳ ০</div>
+                <div class="stat-card-sub" id="lastOutDate">—</div>
             </div>
-            <div style="overflow-x: auto;">
-                <table id="statementTable">
-                    <thead>
-                        <tr>
-                            <th>তারিখ ও সময়</th>
-                            <th>বিবরণ</th>
-                            <th>ধরন</th>
-                            <th>পরিমাণ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="transactionList"></tbody>
-                </table>
+            <div class="stat-card">
+                <div class="stat-card-icon" style="background:rgba(200,169,110,0.1)">🏆</div>
+                <div class="stat-card-label">এই মাসের সর্বোচ্চ জমা</div>
+                <div class="stat-card-value" id="maxInVal" style="color:var(--gold)">৳ ০</div>
+                <div class="stat-card-sub">চলতি মাস</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon" style="background:rgba(79,195,247,0.1)">📊</div>
+                <div class="stat-card-label">গড় লেনদেন</div>
+                <div class="stat-card-value" id="avgVal" style="color:var(--blue)">৳ ০</div>
+                <div class="stat-card-sub">প্রতি এন্ট্রি</div>
             </div>
         </div>
-    </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        <!-- TABS -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('transactions')">🧾 লেনদেন</button>
+            <button class="tab-btn" onclick="switchTab('entry')">➕ নতুন এন্ট্রি</button>
+            <button class="tab-btn" onclick="switchTab('chart')">📈 বিশ্লেষণ</button>
+            <button class="tab-btn" onclick="switchTab('profile')">👤 প্রোফাইল</button>
+        </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDYaSJeaPOD5gtNyei4P84xDdpJAB_g8ck",
-            authDomain: "mybankingsystem-fec5a.firebaseapp.com",
-            projectId: "mybankingsystem-fec5a",
-            storageBucket: "mybankingsystem-fec5a.firebasestorage.app",
-            messagingSenderId: "960676273528",
-            appId: "1:960676273528:web:4f86e45c420d1f39b93c8d"
-        };
+        <!-- PANEL: TRANSACTIONS -->
+        <div class="panel active" id="panel-transactions">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>ট্রানজেকশন স্টেটমেন্ট</h3>
+                    <div class="action-btns">
+                        <button class="action-btn" onclick="downloadPDF()">⬇ PDF</button>
+                        <button class="action-btn" onclick="downloadCSV()">⬇ CSV</button>
+                    </div>
+                </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+                <div class="search-filter">
+                    <input class="search-input" id="searchInput" placeholder="🔍 বিবরণ অনুসন্ধান করুন..." oninput="renderTable()">
+                    <select class="filter-select" id="filterType" onchange="renderTable()">
+                        <option value="all">সব লেনদেন</option>
+                        <option value="in">শুধু জমা</option>
+                        <option value="out">শুধু খরচ</option>
+                    </select>
+                    <select class="filter-select" id="filterMonth" onchange="renderTable()">
+                        <option value="all">সব মাস</option>
+                    </select>
+                </div>
 
-        // লগইন চেক (আপনার দেওয়া পিন)
-        window.checkLogin = function() {
-            const pin = document.getElementById('loginPass').value;
-            if(pin === "540663") { 
-                document.getElementById('login-container').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                startClock();
-                loadData();
-            } else {
-                alert("ভুল পিন! সঠিক পিন দিন।");
-            }
-        };
+                <div class="table-scroll">
+                    <table class="txn-table" id="txnTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>তারিখ ও সময়</th>
+                                <th>বিবরণ</th>
+                                <th>ধরন</th>
+                                <th style="text-align:right">পরিমাণ</th>
+                                <th style="text-align:right">ব্যালেন্স</th>
+                            </tr>
+                        </thead>
+                        <tbody id="txnBody">
+                            <tr><td colspan="6"><div class="no-txn"><div class="loading-ring"></div></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-        function startClock() {
-            setInterval(() => {
-                document.getElementById('liveClock').innerText = "তারিখ ও সময়: " + new Date().toLocaleString('bn-BD');
-            }, 1000);
+        <!-- PANEL: ENTRY -->
+        <div class="panel" id="panel-entry">
+            <div class="entry-card">
+                <h3>নতুন লেনদেন এন্ট্রি</h3>
+
+                <div style="margin-bottom:14px">
+                    <div class="form-label" style="margin-bottom:8px">ধরন বেছে নিন</div>
+                    <div class="type-toggle">
+                        <button class="type-btn active-in" id="typeBtnIn" onclick="setType('in')">📥 ক্যাশ ইন (জমা)</button>
+                        <button class="type-btn" id="typeBtnOut" onclick="setType('out')">📤 ক্যাশ আউট (খরচ)</button>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">টাকার পরিমাণ (৳)</label>
+                        <input class="form-input" type="number" id="amount" placeholder="যেমন: ১০০০">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">শ্রেণী</label>
+                        <select class="form-input" id="category">
+                            <option value="সাধারণ">সাধারণ</option>
+                            <option value="বেতন/আয়">বেতন / আয়</option>
+                            <option value="খাবার">খাবার</option>
+                            <option value="যাতায়াত">যাতায়াত</option>
+                            <option value="বিল">বিল / ইউটিলিটি</option>
+                            <option value="স্বাস্থ্য">স্বাস্থ্য</option>
+                            <option value="শিক্ষা">শিক্ষা</option>
+                            <option value="ব্যবসা">ব্যবসা</option>
+                            <option value="সঞ্চয়">সঞ্চয়</option>
+                            <option value="অন্যান্য">অন্যান্য</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:14px">
+                    <label class="form-label">বিবরণ</label>
+                    <input class="form-input" type="text" id="desc" placeholder="লেনদেনের বিস্তারিত লিখুন...">
+                </div>
+
+                <div class="form-group" style="margin-bottom:20px">
+                    <label class="form-label">তারিখ (ঐচ্ছিক — ফাঁকা রাখলে এখনকার সময় নেবে)</label>
+                    <input class="form-input" type="datetime-local" id="customDate">
+                </div>
+
+                <button class="submit-btn" onclick="addTransaction()" id="saveBtn">
+                    লেনদেন সেভ করুন
+                </button>
+            </div>
+        </div>
+
+        <!-- PANEL: CHART -->
+        <div class="panel" id="panel-chart">
+            <div class="chart-card">
+                <h3>মাসভিত্তিক বিশ্লেষণ</h3>
+                <div id="barChart" class="bar-chart">
+                    <div style="margin:auto; color:var(--muted); font-size:0.85rem">ডেটা লোড হচ্ছে...</div>
+                </div>
+                <div style="display:flex; gap:20px; margin-top:14px;">
+                    <div style="display:flex; align-items:center; gap:7px; font-size:0.78rem; color:var(--muted)">
+                        <div style="width:12px;height:12px;border-radius:3px;background:var(--green)"></div> জমা
+                    </div>
+                    <div style="display:flex; align-items:center; gap:7px; font-size:0.78rem; color:var(--muted)">
+                        <div style="width:12px;height:12px;border-radius:3px;background:var(--red)"></div> খরচ
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3>শ্রেণীভিত্তিক খরচ বিশ্লেষণ</h3>
+                <div id="catBreakdown" style="display:flex; flex-direction:column; gap:10px;">
+                    <div style="color:var(--muted); font-size:0.85rem">ডেটা লোড হচ্ছে...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL: PROFILE -->
+        <div class="panel" id="panel-profile">
+            <div class="profile-card">
+                <div class="profile-avatar">👤</div>
+                <div class="profile-name">এম এ হালিম রাহি</div>
+                <div style="color:var(--muted); font-size:0.82rem; margin-top:4px">ব্যক্তিগত ব্যাংকিং অ্যাকাউন্ট</div>
+
+                <div class="profile-detail">
+                    <div class="profile-detail-item">
+                        <div class="profile-detail-label">ফোন</div>
+                        <div class="profile-detail-val">০১৭৯৯০৭২৯৮৭</div>
+                    </div>
+                    <div class="profile-detail-item">
+                        <div class="profile-detail-label">ঠিকানা</div>
+                        <div class="profile-detail-val">গোটারগ্রাম, বালাউট-৩১৯০</div>
+                    </div>
+                    <div class="profile-detail-item">
+                        <div class="profile-detail-label">জেলা</div>
+                        <div class="profile-detail-val">জকিগঞ্জ, সিলেট</div>
+                    </div>
+                    <div class="profile-detail-item">
+                        <div class="profile-detail-label">অ্যাকাউন্ট তৈরি</div>
+                        <div class="profile-detail-val" id="firstTxnDate">—</div>
+                    </div>
+                </div>
+
+                <button class="logout-btn" onclick="logout()">🔓 লগ আউট</button>
+            </div>
+        </div>
+
+    </div><!-- /dash-body -->
+</div><!-- /dashboard -->
+
+</div><!-- /page-wrap -->
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+    <span class="toast-icon" id="toastIcon">✅</span>
+    <span id="toastMsg">সফল!</span>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, Timestamp }
+        from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDYaSJeaPOD5gtNyei4P84xDdpJAB_g8ck",
+        authDomain: "mybankingsystem-fec5a.firebaseapp.com",
+        projectId: "mybankingsystem-fec5a",
+        storageBucket: "mybankingsystem-fec5a.firebasestorage.app",
+        messagingSenderId: "960676273528",
+        appId: "1:960676273528:web:4f86e45c420d1f39b93c8d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ─── PIN LOGIN ───
+    let pinValue = '';
+    const CORRECT_PIN = '540663';
+
+    window.addPin = function(d) {
+        if(pinValue.length >= 6) return;
+        pinValue += d;
+        updateDots();
+        if(pinValue.length === 6) setTimeout(checkLogin, 200);
+    };
+
+    window.delPin = function() {
+        pinValue = pinValue.slice(0, -1);
+        updateDots();
+    };
+
+    function updateDots() {
+        const dots = document.querySelectorAll('.pin-dot');
+        dots.forEach((d, i) => d.classList.toggle('filled', i < pinValue.length));
+    }
+
+    window.checkLogin = function() {
+        if(pinValue === CORRECT_PIN) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            startClock();
+            loadData();
+        } else {
+            document.getElementById('loginError').textContent = '❌ ভুল পিন! আবার চেষ্টা করুন।';
+            const card = document.querySelector('.login-card');
+            card.style.animation = 'none';
+            card.offsetHeight;
+            card.style.borderColor = 'rgba(255,107,138,0.5)';
+            setTimeout(() => {
+                pinValue = '';
+                updateDots();
+                card.style.borderColor = '';
+                document.getElementById('loginError').textContent = '';
+            }, 1200);
         }
+    };
 
-        window.addTransaction = async function() {
-            const amt = document.getElementById('amount').value;
-            const desc = document.getElementById('desc').value;
-            const type = document.getElementById('type').value;
+    window.logout = function() {
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'flex';
+        pinValue = '';
+        updateDots();
+        allTxns = [];
+    };
 
-            if(!amt || !desc) return alert("পরিমাণ এবং বিবরণ দিন");
-
-            try {
-                await addDoc(collection(db, "transactions"), {
-                    amount: parseFloat(amt),
-                    description: desc,
-                    type: type,
-                    timestamp: new Date()
-                });
-                alert("লেনদেন সফল!");
-                document.getElementById('amount').value = '';
-                document.getElementById('desc').value = '';
-                loadData();
-            } catch (e) { console.error(e); }
+    // ─── CLOCK ───
+    function startClock() {
+        const el = document.getElementById('topClock');
+        const tick = () => {
+            el.textContent = new Date().toLocaleString('bn-BD', {
+                hour:'2-digit', minute:'2-digit', second:'2-digit'
+            });
         };
+        tick();
+        setInterval(tick, 1000);
+    }
 
-        async function loadData() {
-            const q = query(collection(db, "transactions"), orderBy("timestamp", "desc"));
-            const querySnapshot = await getDocs(q);
-            
-            let total = 0, lastIn = 0, lastOut = 0, maxIn = 0;
-            let tableHTML = "";
-            const currentMonth = new Date().getMonth();
+    // ─── TABS ───
+    window.switchTab = function(name) {
+        document.querySelectorAll('.tab-btn').forEach((b, i) => {
+            const tabs = ['transactions','entry','chart','profile'];
+            b.classList.toggle('active', tabs[i] === name);
+        });
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('panel-' + name).classList.add('active');
 
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                const tDate = data.timestamp.toDate();
-                const formattedDate = tDate.toLocaleString('bn-BD');
+        if(name === 'chart') renderChart();
+    };
 
-                if(data.type === 'in') {
-                    total += data.amount;
-                    if(lastIn === 0) lastIn = data.amount;
-                    if(tDate.getMonth() === currentMonth && data.amount > maxIn) maxIn = data.amount;
-                } else {
-                    total -= data.amount;
-                    if(lastOut === 0) lastOut = data.amount;
-                }
+    // ─── TYPE TOGGLE ───
+    let selectedType = 'in';
+    window.setType = function(t) {
+        selectedType = t;
+        const btnIn = document.getElementById('typeBtnIn');
+        const btnOut = document.getElementById('typeBtnOut');
+        btnIn.className = 'type-btn' + (t === 'in' ? ' active-in' : '');
+        btnOut.className = 'type-btn' + (t === 'out' ? ' active-out' : '');
+    };
 
-                tableHTML += `<tr>
-                    <td>${formattedDate}</td>
-                    <td>${data.description}</td>
-                    <td style="color:${data.type === 'in' ? 'green' : 'red'}">${data.type === 'in' ? 'জমা' : 'খরচ'}</td>
-                    <td>৳ ${data.amount}</td>
-                </tr>`;
+    // ─── ALL DATA ───
+    let allTxns = [];
+
+    async function loadData() {
+        try {
+            const q = query(collection(db, "transactions"), orderBy("timestamp", "asc"));
+            const snap = await getDocs(q);
+
+            allTxns = [];
+            snap.forEach(doc => {
+                const d = doc.data();
+                allTxns.push({
+                    id: doc.id,
+                    amount: d.amount,
+                    description: d.description,
+                    type: d.type,
+                    category: d.category || 'সাধারণ',
+                    timestamp: d.timestamp.toDate()
+                });
             });
 
-            document.getElementById('transactionList').innerHTML = tableHTML;
-            document.getElementById('totalBalanceDisplay').innerText = total;
-            document.getElementById('lastInDisplay').innerText = "৳ " + lastIn;
-            document.getElementById('lastOutDisplay').innerText = "৳ " + lastOut;
-            document.getElementById('maxMonthlyIn').innerText = "৳ " + maxIn;
+            allTxns.reverse(); // newest first
+            computeStats();
+            renderTable();
+            populateMonthFilter();
+        } catch(e) {
+            console.error(e);
+            showToast('ডেটা লোডে সমস্যা হয়েছে', false);
+        }
+    }
+
+    function computeStats() {
+        let totalIn = 0, totalOut = 0;
+        let lastIn = null, lastOut = null;
+        let maxIn = 0;
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        let monthIn = 0, monthOut = 0;
+        let totalAmt = 0;
+
+        // Iterate reversed (newest first in allTxns)
+        for(const t of allTxns) {
+            if(t.type === 'in') {
+                totalIn += t.amount;
+                totalAmt += t.amount;
+                if(!lastIn) lastIn = t;
+                if(t.timestamp.getMonth() === currentMonth && t.timestamp.getFullYear() === currentYear) {
+                    monthIn += t.amount;
+                    if(t.amount > maxIn) maxIn = t.amount;
+                }
+            } else {
+                totalOut += t.amount;
+                totalAmt += t.amount;
+                if(!lastOut) lastOut = t;
+                if(t.timestamp.getMonth() === currentMonth && t.timestamp.getFullYear() === currentYear) {
+                    monthOut += t.amount;
+                }
+            }
         }
 
-        window.downloadPDF = function() {
+        const balance = totalIn - totalOut;
+        const avg = allTxns.length ? (totalAmt / allTxns.length).toFixed(0) : 0;
+
+        document.getElementById('heroBalance').textContent = formatNum(balance);
+        document.getElementById('heroTotalIn').textContent = '৳ ' + formatNum(totalIn);
+        document.getElementById('heroTotalOut').textContent = '৳ ' + formatNum(totalOut);
+        document.getElementById('heroCount').textContent = allTxns.length + ' টি';
+        document.getElementById('heroMonthNet').textContent = '৳ ' + formatNum(monthIn - monthOut);
+
+        document.getElementById('lastInVal').textContent = lastIn ? '৳ ' + formatNum(lastIn.amount) : '৳ ০';
+        document.getElementById('lastInDate').textContent = lastIn ? shortDate(lastIn.timestamp) : '—';
+        document.getElementById('lastOutVal').textContent = lastOut ? '৳ ' + formatNum(lastOut.amount) : '৳ ০';
+        document.getElementById('lastOutDate').textContent = lastOut ? shortDate(lastOut.timestamp) : '—';
+        document.getElementById('maxInVal').textContent = '৳ ' + formatNum(maxIn);
+        document.getElementById('avgVal').textContent = '৳ ' + formatNum(avg);
+
+        if(allTxns.length) {
+            const oldest = allTxns[allTxns.length-1];
+            document.getElementById('firstTxnDate').textContent = shortDate(oldest.timestamp);
+        }
+    }
+
+    function populateMonthFilter() {
+        const months = new Set();
+        allTxns.forEach(t => {
+            const key = t.timestamp.getFullYear() + '-' + String(t.timestamp.getMonth()+1).padStart(2,'0');
+            months.add(key);
+        });
+        const sel = document.getElementById('filterMonth');
+        sel.innerHTML = '<option value="all">সব মাস</option>';
+        [...months].sort().reverse().forEach(m => {
+            const [y, mo] = m.split('-');
+            const label = `${mo}/${y}`;
+            sel.innerHTML += `<option value="${m}">${label}</option>`;
+        });
+    }
+
+    window.renderTable = function() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const fType = document.getElementById('filterType').value;
+        const fMonth = document.getElementById('filterMonth').value;
+
+        let filtered = allTxns.filter(t => {
+            const matchSearch = t.description.toLowerCase().includes(search);
+            const matchType = fType === 'all' || t.type === fType;
+            const key = t.timestamp.getFullYear() + '-' + String(t.timestamp.getMonth()+1).padStart(2,'0');
+            const matchMonth = fMonth === 'all' || key === fMonth;
+            return matchSearch && matchType && matchMonth;
+        });
+
+        if(!filtered.length) {
+            document.getElementById('txnBody').innerHTML = `<tr><td colspan="6">
+                <div class="no-txn">
+                    <div class="no-txn-icon">📭</div>
+                    <div>কোনো লেনদেন পাওয়া যায়নি</div>
+                </div>
+            </td></tr>`;
+            return;
+        }
+
+        // Running balance calculation on filtered (newest first)
+        // Calculate from all data to get correct running balance
+        let runBalance = 0;
+        const balanceMap = {};
+        // Re-compute from oldest
+        [...allTxns].reverse().forEach(t => {
+            if(t.type === 'in') runBalance += t.amount;
+            else runBalance -= t.amount;
+            balanceMap[t.id] = runBalance;
+        });
+
+        let html = '';
+        filtered.forEach((t, i) => {
+            const dateStr = t.timestamp.toLocaleString('bn-BD', {
+                day:'2-digit', month:'short', year:'numeric',
+                hour:'2-digit', minute:'2-digit'
+            });
+            const bal = balanceMap[t.id];
+            html += `<tr>
+                <td style="color:var(--muted); font-size:0.8rem">${filtered.length - i}</td>
+                <td><div class="txn-date">${dateStr}</div></td>
+                <td>
+                    <div class="txn-desc">${t.description}</div>
+                    <div style="font-size:0.72rem; color:var(--muted); margin-top:3px">${t.category}</div>
+                </td>
+                <td>
+                    <span class="txn-type-badge ${t.type === 'in' ? 'badge-in' : 'badge-out'}">
+                        ${t.type === 'in' ? '↑ জমা' : '↓ খরচ'}
+                    </span>
+                </td>
+                <td style="text-align:right" class="${t.type === 'in' ? 'txn-amount-in' : 'txn-amount-out'}">
+                    ${t.type === 'in' ? '+' : '-'}৳ ${formatNum(t.amount)}
+                </td>
+                <td style="text-align:right; font-size:0.82rem; color:var(--muted)">
+                    ৳ ${formatNum(bal)}
+                </td>
+            </tr>`;
+        });
+
+        document.getElementById('txnBody').innerHTML = html;
+    };
+
+    // ─── ADD TRANSACTION ───
+    window.addTransaction = async function() {
+        const amt = parseFloat(document.getElementById('amount').value);
+        const desc = document.getElementById('desc').value.trim();
+        const category = document.getElementById('category').value;
+        const customDate = document.getElementById('customDate').value;
+
+        if(!amt || amt <= 0) { showToast('সঠিক পরিমাণ দিন', false); return; }
+        if(!desc) { showToast('বিবরণ দিন', false); return; }
+
+        const btn = document.getElementById('saveBtn');
+        btn.innerHTML = '<span class="loading-ring"></span> সেভ হচ্ছে...';
+        btn.disabled = true;
+
+        const timestamp = customDate ? new Date(customDate) : new Date();
+
+        try {
+            await addDoc(collection(db, "transactions"), {
+                amount: amt,
+                description: desc,
+                type: selectedType,
+                category: category,
+                timestamp: Timestamp.fromDate(timestamp)
+            });
+
+            showToast('লেনদেন সফলভাবে সেভ হয়েছে ✅', true);
+            document.getElementById('amount').value = '';
+            document.getElementById('desc').value = '';
+            document.getElementById('customDate').value = '';
+
+            await loadData();
+            switchTab('transactions');
+        } catch(e) {
+            console.error(e);
+            showToast('সমস্যা হয়েছে, আবার চেষ্টা করুন', false);
+        } finally {
+            btn.innerHTML = 'লেনদেন সেভ করুন';
+            btn.disabled = false;
+        }
+    };
+
+    // ─── CHART ───
+    function renderChart() {
+        // Monthly chart
+        const monthData = {};
+        allTxns.forEach(t => {
+            const key = t.timestamp.getFullYear() + '-' + String(t.timestamp.getMonth()+1).padStart(2,'0');
+            if(!monthData[key]) monthData[key] = { in: 0, out: 0 };
+            monthData[key][t.type] += t.amount;
+        });
+
+        const keys = Object.keys(monthData).sort().slice(-6);
+        if(!keys.length) {
+            document.getElementById('barChart').innerHTML = '<div style="margin:auto; color:var(--muted); font-size:0.85rem">ডেটা নেই</div>';
+            return;
+        }
+
+        const maxVal = Math.max(...keys.flatMap(k => [monthData[k].in, monthData[k].out])) || 1;
+
+        let html = '';
+        keys.forEach(k => {
+            const inH = (monthData[k].in / maxVal * 110).toFixed(0);
+            const outH = (monthData[k].out / maxVal * 110).toFixed(0);
+            const [y, m] = k.split('-');
+            const label = m + '/' + y.slice(2);
+
+            html += `<div class="bar-item">
+                <div style="display:flex; align-items:flex-end; gap:3px; flex:1; justify-content:center">
+                    <div class="bar-fill" style="height:${inH}px; background:var(--green); opacity:0.8; width:14px; border-radius:4px 4px 0 0"></div>
+                    <div class="bar-fill" style="height:${outH}px; background:var(--red); opacity:0.8; width:14px; border-radius:4px 4px 0 0"></div>
+                </div>
+                <div class="bar-label">${label}</div>
+            </div>`;
+        });
+
+        document.getElementById('barChart').innerHTML = html;
+
+        // Category breakdown
+        const cats = {};
+        allTxns.filter(t => t.type === 'out').forEach(t => {
+            cats[t.category] = (cats[t.category] || 0) + t.amount;
+        });
+
+        const totalOut = Object.values(cats).reduce((a, b) => a + b, 0) || 1;
+        const sorted = Object.entries(cats).sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+        const catHTML = sorted.length ? sorted.map(([cat, amt]) => {
+            const pct = (amt / totalOut * 100).toFixed(1);
+            return `<div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.82rem">
+                    <span>${cat}</span>
+                    <span style="color:var(--muted)">৳ ${formatNum(amt)} (${pct}%)</span>
+                </div>
+                <div style="height:6px; border-radius:3px; background:rgba(255,255,255,0.05); overflow:hidden">
+                    <div style="height:100%; width:${pct}%; background:linear-gradient(90deg, var(--red), rgba(255,107,138,0.5)); border-radius:3px; transition:width 0.8s ease"></div>
+                </div>
+            </div>`;
+        }).join('') : '<div style="color:var(--muted); font-size:0.85rem">খরচের ডেটা নেই</div>';
+
+        document.getElementById('catBreakdown').innerHTML = catHTML;
+    }
+
+    // ─── PDF DOWNLOAD ───
+    window.downloadPDF = function() {
+        try {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text("Account Statement: M A Halim Rahi", 14, 15);
-            doc.autoTable({ html: '#statementTable', startY: 25 });
-            doc.save("Rahi_Banking_Statement.pdf");
-        };
-    </script>
+
+            doc.setFillColor(10, 14, 26);
+            doc.rect(0, 0, 210, 297, 'F');
+            doc.setTextColor(200, 169, 110);
+            doc.setFontSize(20);
+            doc.setFont('helvetica', 'bold');
+            doc.text('RAHI BANK', 14, 20);
+            doc.setFontSize(10);
+            doc.setTextColor(160, 140, 110);
+            doc.text('Personal Account Statement', 14, 27);
+            doc.setFontSize(9);
+            doc.setTextColor(150, 150, 150);
+            doc.text('M A Halim Rahi | 01799072987 | Gotargram, Jakiganj, Sylhet', 14, 34);
+            doc.text('Generated: ' + new Date().toLocaleString(), 14, 40);
+
+            const rows = allTxns.map((t, i) => [
+                allTxns.length - i,
+                t.timestamp.toLocaleDateString(),
+                t.description,
+                t.category,
+                t.type === 'in' ? 'জমা' : 'খরচ',
+                '৳ ' + formatNum(t.amount)
+            ]);
+
+            doc.autoTable({
+                head: [['#', 'তারিখ', 'বিবরণ', 'শ্রেণী', 'ধরন', 'পরিমাণ']],
+                body: rows,
+                startY: 48,
+                styles: { fontSize: 8, textColor: [220, 210, 195], fillColor: [18, 22, 38] },
+                headStyles: { fillColor: [50, 38, 15], textColor: [200, 169, 110] },
+                alternateRowStyles: { fillColor: [14, 18, 30] }
+            });
+
+            doc.save('Rahi_Banking_Statement_' + new Date().toISOString().slice(0,10) + '.pdf');
+            showToast('PDF ডাউনলোড সম্পন্ন', true);
+        } catch(e) { showToast('PDF তৈরিতে সমস্যা হয়েছে', false); }
+    };
+
+    // ─── CSV DOWNLOAD ───
+    window.downloadCSV = function() {
+        const headers = ['ক্রম,তারিখ,বিবরণ,শ্রেণী,ধরন,পরিমাণ'];
+        const rows = allTxns.map((t, i) => [
+            allTxns.length - i,
+            t.timestamp.toLocaleString(),
+            '"' + t.description.replace(/"/g, '""') + '"',
+            t.category,
+            t.type === 'in' ? 'জমা' : 'খরচ',
+            t.amount
+        ].join(','));
+
+        const csv = [...headers, ...rows].join('\n');
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Rahi_Statement_' + new Date().toISOString().slice(0,10) + '.csv';
+        link.click();
+        showToast('CSV ডাউনলোড সম্পন্ন', true);
+    };
+
+    // ─── HELPERS ───
+    function formatNum(n) {
+        return Number(n).toLocaleString('en-IN');
+    }
+
+    function shortDate(d) {
+        return d.toLocaleDateString('bn-BD', { day:'2-digit', month:'short', year:'numeric' });
+    }
+
+    function showToast(msg, success = true) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toastMsg').textContent = msg;
+        document.getElementById('toastIcon').textContent = success ? '✅' : '❌';
+        toast.className = 'toast show ' + (success ? 'success' : 'error');
+        setTimeout(() => toast.className = 'toast', 3000);
+    }
+
+    // Key support
+    document.addEventListener('keydown', e => {
+        if(document.getElementById('login-screen').style.display !== 'none') {
+            if(e.key >= '0' && e.key <= '9') addPin(e.key);
+            if(e.key === 'Backspace') delPin();
+            if(e.key === 'Enter') checkLogin();
+        }
+    });
+</script>
+
 </body>
 </html>
